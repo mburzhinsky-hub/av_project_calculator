@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AV Project Calculator</title>
+  <style>
+    :root{--bg:#0b1020;--panel:#111827;--panel2:#0f172a;--line:#263244;--text:#e5e7eb;--muted:#94a3b8;--green:#22c55e;--blue:#2563eb;--yellow:#fbbf24;--red:#ef4444;--orange:#f59e0b}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 0 0,#182849 0,#0b1020 45%,#070a12 100%)}
+    header{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;gap:16px;align-items:center;padding:16px 24px;background:rgba(15,23,42,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+    .brand b{display:block;color:var(--green);font-size:18px}.brand span{font-size:12px;color:var(--muted)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    button{border:0;border-radius:10px;padding:9px 13px;background:var(--blue);color:white;font-weight:700;cursor:pointer}
+    button:hover{filter:brightness(1.1)}button.secondary{background:#1f2937}button.danger{background:#b91c1c}
+    nav{position:sticky;top:69px;z-index:4;display:flex;overflow:auto;padding:0 24px;background:rgba(15,23,42,.9);border-bottom:1px solid var(--line)}
+    nav button{border-radius:0;background:transparent;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;padding:14px 16px}
+    nav button.active{color:white;border-bottom-color:var(--green);background:rgba(255,255,255,.06)}
+    main{max-width:1500px;margin:0 auto;padding:26px}
+    h1{margin:0 0 18px;font-size:26px;letter-spacing:-.04em}h2{margin:26px 0 12px;font-size:18px;color:#cbd5e1}h3{margin:0 0 12px;color:var(--muted);font-size:14px}
+    .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.25)}
+    .kpi small{display:block;color:var(--muted);font-weight:700}.kpi b{display:block;margin-top:8px;font-size:27px;color:var(--yellow);letter-spacing:-.04em}.kpi em{font-style:normal;color:#64748b;font-size:12px}
+    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+    input,select{width:100%;min-width:120px;padding:9px 10px;border:1px solid #334155;border-radius:10px;background:#080d18;color:var(--text)}
+    .toolbar input{max-width:460px}
+    .hint{margin-bottom:14px;padding:12px 14px;border:1px solid #334155;border-left:4px solid var(--green);border-radius:12px;background:#0f172a;color:#cbd5e1;font-size:13px}
+    .tablewrap{overflow:auto;background:#0f172a;border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.22);margin-bottom:18px}
+    table{width:100%;min-width:1000px;border-collapse:collapse}
+    th{position:sticky;top:0;background:#182236;color:var(--muted);font-size:11px;text-align:left;text-transform:uppercase;letter-spacing:.04em;padding:10px;border-bottom:1px solid #334155}
+    td{padding:9px 10px;border-bottom:1px solid #1e293b;font-size:12px;vertical-align:middle}
+    tr:hover td{background:rgba(255,255,255,.05)}
+    .badge{display:inline-block;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:800}.red{background:#7f1d1d;color:#fecaca}.orange{background:#78350f;color:#fde68a}.blue{background:#1e3a8a;color:#bfdbfe}
+    .barbox{height:230px;display:flex;align-items:flex-end;gap:12px;padding-top:20px}.bar{flex:1;min-width:44px;border-radius:10px 10px 0 0;background:linear-gradient(180deg,#fbbf24,#f59e0b);position:relative}.bar span{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);font-size:11px;color:#cbd5e1;white-space:nowrap}.bar em{position:absolute;left:50%;top:100%;transform:translateX(-50%);font-style:normal;font-size:11px;color:#94a3b8;margin-top:6px}
+    .timeline{display:grid;gap:10px}.task{display:grid;grid-template-columns:220px 1fr 110px;gap:12px;align-items:center}.track{height:18px;background:#1e293b;border-radius:999px;overflow:hidden}.fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#22c55e)}
+    .formgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}.formgrid label{display:flex;flex-direction:column;gap:7px;color:var(--muted);font-size:12px;background:#0f172a;border:1px solid var(--line);border-radius:14px;padding:13px}
+    @media(max-width:1050px){.grid4,.grid2{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}nav{top:124px}.task{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <b>AV Project Calculator</b>
+    <span>Мокап пресейл-калькулятора мультимедийных проектов</span>
+  </div>
+  <div class="actions">
+    <button class="secondary" onclick="downloadJSON()">Экспорт JSON</button>
+    <button class="secondary" onclick="downloadCSV()">Экспорт CSV</button>
+    <button class="danger" onclick="resetDemo()">Сброс</button>
+  </div>
+</header>
+
+<nav id="tabs"></nav>
+<main id="app"></main>
+
+<script>
+const settings={project:'ЦЗН Рязань — расчёт мультимедиа',site:'2026-07-20',procurement:'2026-06-10',launch:'2026-08-25',teamMount:4,teamPnr:2,hoursDay:8,longDelivery:30};
+
+let spec=JSON.parse(localStorage.av_mock_spec||'null')||[
+{id:'EQ001',installation:'1. Приветственные видеоролики',zone:'Входная зона',category:'Дисплеи/Видео',type:'LCD 65-98',name:'Панель 65” 4K',brand:'Lumien',model:'S6550SD',qty:2,price:199750,supplier:'Аувикс',delivery:7,critical:false},
+{id:'EQ002',installation:'2. Древо профессий',zone:'Зал 1',category:'LED-экран',type:'Indoor COB LED',name:'COB LED 1.56 мм',brand:'BOE',model:'BYH015V12',qty:5.8,price:562855,supplier:'Треолан',delivery:42,critical:true},
+{id:'EQ003',installation:'2. Древо профессий',zone:'Зал 1',category:'Сенсоры/камеры',type:'Лидар',name:'Лазерный лидар',brand:'SDKeli',model:'LS2',qty:1,price:184010,supplier:'Sensotec',delivery:56,critical:true},
+{id:'EQ004',installation:'3. Интерактивный стол',zone:'Зал 2',category:'Интерактивное',type:'Интерактивный стол',name:'Интерактивный стол 55”',brand:'Visuals',model:'LigaSmart IT 55',qty:1,price:493000,supplier:'Аувикс',delivery:7,critical:false},
+{id:'EQ005',installation:'4. Серверная',zone:'Аппаратная',category:'Сетевое',type:'PoE коммутатор',name:'Коммутатор 24 порта PoE++',brand:'TP-Link',model:'SG3428XPP-M2',qty:1,price:289826,supplier:'Top Computers',delivery:7,critical:false}
+];
+
+let priceDB=JSON.parse(localStorage.av_mock_prices||'null')||[
+{id:'PR001',category:'Дисплеи/Видео',type:'LCD панель',name:'Панель 65” 4K',brand:'Lumien',model:'S6550SD',price:199750,supplier:'Аувикс',delivery:7,features:'65; 4K; 500 nit; signage'},
+{id:'PR002',category:'LED-экран',type:'Indoor COB LED',name:'COB LED 1.56 мм',brand:'BOE',model:'BYH015V12',price:562855,supplier:'Треолан',delivery:42,features:'P1.56; COB; indoor'},
+{id:'PR003',category:'Медиасервер',type:'Media server',name:'Медиасервер RTX4060',brand:'Visuals',model:'VS-560',price:276923,supplier:'Top Computers',delivery:7,features:'RTX4060; 4K; media server'}
+];
+
+const norms={
+'LED-экран':{mount:8,pnr:2,design:1.2,k:1.3},
+'Интерактивное':{mount:2,pnr:4,design:4,k:1.35},
+'Система управления':{mount:2,pnr:4,design:4,k:1.35},
+'Кабельная продукция':{mount:.1,pnr:0,design:0,k:1},
+'Коммутация':{mount:.5,pnr:.2,design:.2,k:1.05},
+'Сетевое':{mount:2,pnr:2,design:1,k:1.1},
+'Дисплеи/Видео':{mount:2,pnr:2,design:1,k:1.1},
+'Сенсоры/камеры':{mount:2,pnr:2,design:1,k:1.1},
+'Медиасервер':{mount:2,pnr:4,design:1,k:1.25},
+'Прочее':{mount:2,pnr:1,design:.5,k:1.1}
+};
+
+const tabs=[['dash','Дашборд'],['spec','Спецификация'],['prices','Прайс-листы'],['works','Работы'],['schedule','План-график'],['risks','Риски'],['settings','Настройки']];
+let active='dash';
+
+function save(){localStorage.av_mock_spec=JSON.stringify(spec);localStorage.av_mock_prices=JSON.stringify(priceDB)}
+function money(n){return new Intl.NumberFormat('ru-RU').format(Math.round(+n||0))+' ₽'}
+function days(date,d){let x=new Date(date);x.setDate(x.getDate()+Math.ceil(+d||0));return x.toISOString().slice(0,10)}
+function later(a,b){return new Date(a)>new Date(b)?a:b}
+function getNorm(cat){return norms[cat]||norms['Прочее']}
+
+function works(){
+  return spec.flatMap(i=>{
+    const n=getNorm(i.category), base=i.qty*n.k;
+    return [
+      {id:i.id,installation:i.installation,category:i.category,equipment:i.brand+' '+i.model,stage:'Проектирование',role:'Проектировщик',hours:base*n.design,cost:base*n.design*4000},
+      {id:i.id,installation:i.installation,category:i.category,equipment:i.brand+' '+i.model,stage:'Монтаж',role:'Монтажник',hours:base*n.mount,cost:base*n.mount*3500},
+      {id:i.id,installation:i.installation,category:i.category,equipment:i.brand+' '+i.model,stage:'ПНР / настройка',role:'ПНР-инженер',hours:base*n.pnr,cost:base*n.pnr*5000}
+    ];
+  });
+}
+
+function aggregate(){
+  let w=works(), map={};
+  spec.forEach(i=>{
+    let key=i.installation;
+    map[key]??={installation:key,items:0,equip:0,delivery:0,ready:settings.procurement,mountH:0,pnrH:0,designH:0,workCost:0,total:0};
+    let r=map[key];
+    r.items++;
+    r.equip+=i.qty*i.price;
+    r.delivery=Math.max(r.delivery,+i.delivery||0);
+    r.ready=later(r.ready,days(settings.procurement,i.delivery));
+  });
+  w.forEach(x=>{
+    let r=map[x.installation]; if(!r)return;
+    r.workCost+=x.cost;
+    if(x.stage==='Монтаж')r.mountH+=x.hours;
+    if(x.stage.includes('ПНР'))r.pnrH+=x.hours;
+    if(x.stage==='Проектирование')r.designH+=x.hours;
+  });
+  Object.values(map).forEach(r=>{
+    r.mountDays=Math.max(1,Math.ceil(r.mountH/(settings.teamMount*settings.hoursDay)));
+    r.pnrDays=Math.max(1,Math.ceil(r.pnrH/(settings.teamPnr*settings.hoursDay)));
+    r.mountStart=later(settings.site,r.ready);
+    r.mountEnd=days(r.mountStart,r.mountDays);
+    r.pnrEnd=days(r.mountEnd,r.pnrDays);
+    r.launch=days(r.pnrEnd,2);
+    r.total=r.equip+r.workCost;
+  });
+  return Object.values(map);
+}
+
+function risks(){
+  let a=aggregate(), out=[];
+  spec.forEach(i=>{
+    if(!i.price)out.push(['Высокий','Нет цены',i.installation,i.name,'Запросить КП']);
+    if(!i.supplier)out.push(['Средний','Нет поставщика',i.installation,i.name,'Назначить поставщика']);
+    if(i.delivery>42)out.push(['Критический','Длинная поставка',i.installation,i.name,'Искать аналог / заказывать немедленно']);
+  });
+  a.forEach(i=>{
+    if(new Date(i.launch)>new Date(settings.launch))out.push(['Критический','Срыв запуска',i.installation,'Инсталляция','Усилить команду / параллелить работы']);
+  });
+  return out;
+}
+
+function table(cols,rows){
+  return `<div class="tablewrap"><table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderTabs(){
+  document.getElementById('tabs').innerHTML=tabs.map(t=>`<button class="${active===t[0]?'active':''}" onclick="active='${t[0]}';render()">${t[1]}</button>`).join('');
+}
+
+function renderDash(){
+  let a=aggregate(), total=a.reduce((s,i)=>s+i.total,0), equip=a.reduce((s,i)=>s+i.equip,0), work=total-equip, rs=risks(), max=Math.max(...a.map(i=>i.total));
+  return `<h1>Сводка / Дашборд</h1>
+  <div class="grid4">
+    <div class="card kpi"><small>Общая стоимость</small><b>${money(total)}</b><em>оборудование + работы</em></div>
+    <div class="card kpi"><small>Оборудование</small><b>${money(equip)}</b><em>${Math.round(equip/total*100||0)}% бюджета</em></div>
+    <div class="card kpi"><small>Работы</small><b>${money(work)}</b><em>проектирование / СМР / ПНР</em></div>
+    <div class="card kpi"><small>Риски</small><b style="color:#fb7185">${rs.length}</b><em>критических: ${rs.filter(r=>r[0]==='Критический').length}</em></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Бюджет по инсталляциям</h3><div class="barbox">${a.map(i=>`<div class="bar" style="height:${Math.max(12,i.total/max*200)}px"><span>${Math.round(i.total/1000)} тыс.</span><em>${i.installation.split('.')[0]}</em></div>`).join('')}</div></div>
+    <div class="card"><h3>Ближайшие контрольные даты</h3><div class="timeline">${scheduleRows().slice(0,6).map(t=>`<div class="task"><b>${t.stage}</b><div class="track"><div class="fill" style="width:${Math.min(100,t.duration*3)}%"></div></div><span>${t.end}</span></div>`).join('')}</div></div>
+  </div>${renderInstallations()}`;
+}
+
+function renderSpec(){
+  return `<h1>Спецификация</h1><div class="toolbar"><input id="search" placeholder="Поиск по модели, бренду, инсталляции" oninput="renderSpecTable()"><button onclick="addSpec()">+ позиция</button></div><div id="specTable"></div>`;
+}
+
+function renderSpecTable(){
+  let q=(document.getElementById('search')?.value||'').toLowerCase();
+  let rows=spec.filter(i=>(i.name+i.model+i.brand+i.installation).toLowerCase().includes(q)).map((i,idx)=>[
+    i.id,i.installation,i.zone,i.category,i.type,i.name,i.brand,i.model,i.qty,money(i.price),money(i.qty*i.price),i.supplier,i.delivery+' дн.',i.critical?'да':'нет',`<button class="danger" onclick="delSpec(${idx})">×</button>`
+  ]);
+  document.getElementById('specTable').innerHTML=table(['ID','Инсталляция','Зона','Категория','Тип','Наименование','Бренд','Модель','Кол-во','Цена','Стоимость','Поставщик','Поставка','Крит.',''],rows);
+}
+
+function renderPrices(){
+  return `<h1>Прайс-листы / база оборудования</h1>
+  <div class="hint">Формат прайса: одна строка = одна товарная позиция. Обязательные поля: категория, тип, наименование, производитель, модель, цена, поставщик, срок поставки.</div>
+  <div class="toolbar"><input id="priceSearch" placeholder="Поиск по модели, характеристикам, поставщику" oninput="renderPriceTable()"><button onclick="addPrice()">+ в базу</button></div><div id="priceTable"></div>`;
+}
+
+function renderPriceTable(){
+  let q=(document.getElementById('priceSearch')?.value||'').toLowerCase();
+  let rows=priceDB.filter(i=>(i.name+i.model+i.brand+i.features+i.supplier).toLowerCase().includes(q)).map((i,idx)=>[
+    i.category,i.type,i.name,i.brand,i.model,money(i.price),i.supplier,i.delivery+' дн.',i.features,`<button onclick="toSpec(${idx})">в спецификацию</button>`
+  ]);
+  document.getElementById('priceTable').innerHTML=table(['Категория','Тип','Наименование','Бренд','Модель','Цена','Поставщик','Срок','Характеристики',''],rows);
+}
+
+function renderWorks(){
+  let rows=works().map(w=>[w.id,w.installation,w.category,w.equipment,w.stage,w.role,w.hours.toFixed(1),money(w.cost)]);
+  return `<h1>Расчёт работ</h1>`+table(['ID','Инсталляция','Категория','Оборудование','Этап','Роль','ч/ч','Стоимость'],rows);
+}
+
+function renderInstallations(){
+  let rows=aggregate().map(i=>[i.installation,i.items,money(i.equip),money(i.workCost),money(i.total),i.delivery+' дн.',i.mountStart,i.mountEnd,i.pnrEnd,i.launch]);
+  return `<h1>Инсталляции</h1>`+table(['Инсталляция','Поз.','Оборудование','Работы','Итого','Поставка','СМР старт','СМР финиш','ПНР финиш','Запуск'],rows);
+}
+
+function scheduleRows(){
+  let rows=[
+    {stage:'Проектирование',installation:'Проект',start:settings.procurement,duration:14,end:days(settings.procurement,14)},
+    {stage:'Закупка',installation:'Проект',start:settings.procurement,duration:7,end:days(settings.procurement,7)}
+  ];
+  aggregate().forEach(i=>rows.push(
+    {stage:'Логистика / поставка',installation:i.installation,start:settings.procurement,duration:i.delivery,end:i.ready},
+    {stage:'СМР',installation:i.installation,start:i.mountStart,duration:i.mountDays,end:i.mountEnd},
+    {stage:'ПНР',installation:i.installation,start:i.mountEnd,duration:i.pnrDays,end:i.pnrEnd},
+    {stage:'Тестирование / передача',installation:i.installation,start:i.pnrEnd,duration:2,end:i.launch}
+  ));
+  return rows;
+}
+
+function renderSchedule(){
+  let rows=scheduleRows().map(r=>[r.stage,r.installation,r.start,r.duration+' дн.',r.end]);
+  return `<h1>План-график</h1>`+table(['Этап','Инсталляция','Начало','Длительность','Окончание'],rows);
+}
+
+function renderRisks(){
+  let rows=risks().map(r=>[`<span class="badge ${r[0]==='Критический'?'red':r[0]==='Высокий'?'orange':'blue'}">${r[0]}</span>`,r[1],r[2],r[3],r[4]]);
+  return `<h1>Риски</h1>`+table(['Уровень','Тип риска','Инсталляция','Позиция','Рекомендация'],rows);
+}
+
+function renderSettings(){
+  return `<h1>Настройки проекта</h1>
+  <div class="formgrid">
+    <label>Название проекта<input value="${settings.project}" onchange="settings.project=this.value"></label>
+    <label>Начало закупки<input type="date" value="${settings.procurement}" onchange="settings.procurement=this.value;render()"></label>
+    <label>Выход на площадку<input type="date" value="${settings.site}" onchange="settings.site=this.value;render()"></label>
+    <label>Плановый запуск<input type="date" value="${settings.launch}" onchange="settings.launch=this.value;render()"></label>
+    <label>Монтажников<input type="number" value="${settings.teamMount}" onchange="settings.teamMount=+this.value;render()"></label>
+    <label>ПНР-инженеров<input type="number" value="${settings.teamPnr}" onchange="settings.teamPnr=+this.value;render()"></label>
+    <label>Рабочих часов в день<input type="number" value="${settings.hoursDay}" onchange="settings.hoursDay=+this.value;render()"></label>
+    <label>Порог длинной поставки<input type="number" value="${settings.longDelivery}" onchange="settings.longDelivery=+this.value;render()"></label>
+  </div>
+  <h2>Нормативы по категориям</h2>
+  ${table(['Категория','Монтаж ч/ед','ПНР ч/ед','Проект ч/ед','Ксложн.'],Object.entries(norms).map(([c,n])=>[c,n.mount,n.pnr,n.design,n.k]))}`;
+}
+
+function addSpec(){
+  spec.push({id:'EQ'+Math.random().toString(36).slice(2,6).toUpperCase(),installation:'Новая инсталляция',zone:'',category:'Прочее',type:'',name:'Новая позиция',brand:'',model:'',qty:1,price:0,supplier:'',delivery:0,critical:false});
+  save();render();
+}
+function delSpec(idx){spec.splice(idx,1);save();render()}
+function addPrice(){
+  priceDB.push({id:'PR'+Math.random().toString(36).slice(2,6).toUpperCase(),category:'Прочее',type:'',name:'Позиция прайса',brand:'',model:'',price:0,supplier:'',delivery:7,features:''});
+  save();render();
+}
+function toSpec(idx){
+  let p=priceDB[idx];
+  spec.push({id:'EQ'+Math.random().toString(36).slice(2,6).toUpperCase(),installation:'Новая инсталляция',zone:'',category:p.category,type:p.type,name:p.name,brand:p.brand,model:p.model,qty:1,price:p.price,supplier:p.supplier,delivery:p.delivery,critical:p.delivery>settings.longDelivery});
+  save();active='spec';render();
+}
+
+function downloadJSON(){
+  let blob=new Blob([JSON.stringify({settings,spec,priceDB},null,2)],{type:'application/json'});
+  downloadBlob(blob,'av-calculator-data.json');
+}
+function downloadCSV(){
+  let header=['id','installation','zone','category','type','name','brand','model','qty','price','supplier','delivery','critical'];
+  let csv=[header.join(';')].concat(spec.map(i=>header.map(h=>String(i[h]??'').replaceAll(';',',')).join(';'))).join('\n');
+  downloadBlob(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),'specification.csv');
+}
+function downloadBlob(blob,name){
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function resetDemo(){
+  localStorage.removeItem('av_mock_spec');
+  localStorage.removeItem('av_mock_prices');
+  location.reload();
+}
+function render(){
+  renderTabs();
+  let html={dash:renderDash,spec:renderSpec,prices:renderPrices,works:renderWorks,schedule:renderSchedule,risks:renderRisks,settings:renderSettings}[active]();
+  document.getElementById('app').innerHTML=html;
+  if(active==='spec')renderSpecTable();
+  if(active==='prices')renderPriceTable();
+}
+render();
+</script>
+</body>
+</html>
